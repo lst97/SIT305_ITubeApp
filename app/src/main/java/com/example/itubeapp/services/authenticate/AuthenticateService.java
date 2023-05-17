@@ -106,6 +106,11 @@ public class AuthenticateService implements AuthenticateFactory {
 
     @Override
     public User register(User user) {
+        User userFromDB = userRepository.read(user.getName());
+        if (userFromDB == null) {
+            userRepository.create(user);
+            return user;
+        }
         return null;
     }
 

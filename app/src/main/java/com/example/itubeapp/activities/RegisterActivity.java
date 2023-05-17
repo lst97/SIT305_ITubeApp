@@ -8,20 +8,18 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.itubeapp.R;
-import com.example.itubeapp.handlers.RepositoriesHandler;
+import com.example.itubeapp.handlers.ServicesHandler;
 import com.example.itubeapp.models.User;
-import com.example.itubeapp.persistent.UserRepository;
+import com.example.itubeapp.services.authenticate.AuthenticateService;
 import com.example.itubeapp.utils.PasswordHasher;
 
 public class RegisterActivity extends AppCompatActivity {
-
     EditText fullNameEditText;
     EditText usernameEditText;
     EditText passwordEditText;
     EditText confirmPasswordEditText;
     Button registerButton;
-
-    UserRepository userRepository;
+    AuthenticateService authenticateService;
 
     private void initViews() {
         fullNameEditText = findViewById(R.id.register_full_name_input);
@@ -37,7 +35,10 @@ public class RegisterActivity extends AppCompatActivity {
                 String username = usernameEditText.getText().toString();
                 String passwordHash = PasswordHasher.hash(passwordEditText.getText().toString());
 
-                userRepository.create(new User(username, passwordHash));
+                if(authenticateService.register(new User(username, passwordHash)) == null) {
+                    usernameEditText.setError("Username already exists");
+                    return;
+                }
 
                 Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(loginIntent);
@@ -86,7 +87,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        userRepository = (UserRepository) RepositoriesHandler.getInstance().getRepository(UserRepository.class.getName());
+        authenticateService = (AuthenticateService) ServicesHandler.getInstance().getService(AuthenticateService.class.getName());
+
         initViews();
         initListeners();
 
